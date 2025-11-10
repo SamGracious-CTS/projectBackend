@@ -116,53 +116,136 @@ exports.getPreviousAppointmentById = async (req, res) => {
   }
 };
 
+// exports.getUpcomingAppointments = async (req, res) => {
+//   try {
+//     const { patientId } = req.query;
+
+//     // Validate patientId format
+//     if (!mongoose.Types.ObjectId.isValid(patientId)) {
+//       return res.status(400).json({ message: 'Invalid patientId format' });
+//     }
+
+//     const now = new Date();
+//     const today = now.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+//     const currentTime = now.toTimeString().slice(0, 5); // 'HH:mm'
+
+//     // Fetch upcoming appointments
+//     const upcomingAppointments = await Appointment.find({
+//       patientId: new mongoose.Types.ObjectId(patientId),
+//       $or: [
+//         { date: { $gt: now } }, // future dates
+//         { date: today, startTime: { $gt: currentTime } } // same day later time
+//       ]
+//     }).sort({ date: 1, startTime: 1 });
+
+//     if (!upcomingAppointments.length) {
+//       return res.status(404).json({ message: 'No upcoming appointments found' });
+//     }
+
+//     // Fetch doctor details for each appointment
+//     const formatted = await Promise.all(
+//       upcomingAppointments.map(async (app) => {
+//         const doctor = await Doctor.findOne({ registrationNumber: app.registrationNumber });
+//         return {
+//           id: app._id.toString(),
+//           patientId: app.patientId.toString(),
+//           registrationNumber: app.registrationNumber,
+//           doctorName: doctor ? doctor.name : null,
+//           specialty: doctor ? doctor.specialty : null,
+//           date: app.date.toISOString().split('T')[0],
+//           startTime: app.startTime,
+//           endTime: app.endTime,
+//           status: app.status,
+//           createdAt: app.createdAt,
+//           updatedAt: app.updatedAt
+//         };
+//       })
+//     );
+
+//     res.json(formatted);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal Server Error', error: error.message });
+//   }
+// };
+
+
+// exports.getUpcomingAppointments = async (req, res) => {
+//   try {
+//     const { patientId } = req.query;
+
+//     if (!mongoose.Types.ObjectId.isValid(patientId)) {
+//       return res.status(400).json({ message: 'Invalid patientId format' });
+//     }
+
+//     const now = new Date();
+//     const todayDate = now.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+//     const currentTime = now.toTimeString().slice(0, 5); // 'HH:mm'
+
+//     const todayStart = new Date(`${todayDate}T00:00:00`);
+//     const todayEnd = new Date(`${todayDate}T23:59:59`);
+
+//     const upcomingAppointments = await Appointment.find({
+//   patientId: new mongoose.Types.ObjectId(patientId),
+//   status: 'confirmed',
+//   $or: [
+//     { date: { $gt: todayEnd } },
+//     {
+//       date: { $eq: todayStart },
+//       startTime: { $gt: currentTime }
+//     }
+//   ]
+// }).sort({ date: 1, startTime: 1 });
+
+
+//     if (!upcomingAppointments.length) {
+//       return res.status(404).json({ message: 'No upcoming appointments found' });
+//     }
+
+//     const formatted = await Promise.all(
+//       upcomingAppointments.map(async (app) => {
+//         const doctor = await Doctor.findOne({ registrationNumber: app.registrationNumber });
+//         return {
+//           id: app._id.toString(),
+//           patientId: app.patientId.toString(),
+//           registrationNumber: app.registrationNumber,
+//           doctorName: doctor ? doctor.name : null,
+//           specialty: doctor ? doctor.specialty : null,
+//           date: app.date.toISOString().split('T')[0],
+//           startTime: app.startTime,
+//           endTime: app.endTime,
+//           status: app.status,
+//           createdAt: app.createdAt,
+//           updatedAt: app.updatedAt
+//         };
+//       })
+//     );
+
+//     res.json(formatted);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal Server Error', error: error.message });
+//   }
+// };
+
 exports.getUpcomingAppointments = async (req, res) => {
   try {
     const { patientId } = req.query;
 
-    // Validate patientId format
     if (!mongoose.Types.ObjectId.isValid(patientId)) {
       return res.status(400).json({ message: 'Invalid patientId format' });
     }
 
-    const now = new Date();
-    const today = now.toISOString().split('T')[0]; // 'YYYY-MM-DD'
-    const currentTime = now.toTimeString().slice(0, 5); // 'HH:mm'
-
-    // Fetch upcoming appointments
-    const upcomingAppointments = await Appointment.find({
+    const appointments = await Appointment.find({
       patientId: new mongoose.Types.ObjectId(patientId),
-      $or: [
-        { date: { $gt: now } }, // future dates
-        { date: today, startTime: { $gt: currentTime } } // same day later time
-      ]
+      status: 'confirmed'
     }).sort({ date: 1, startTime: 1 });
 
-    if (!upcomingAppointments.length) {
-      return res.status(404).json({ message: 'No upcoming appointments found' });
+    if (!appointments.length) {
+      return res.status(404).json({ message: 'No confirmed appointments found' });
     }
 
-    // Fetch doctor details for each appointment
-    const formatted = await Promise.all(
-      upcomingAppointments.map(async (app) => {
-        const doctor = await Doctor.findOne({ registrationNumber: app.registrationNumber });
-        return {
-          id: app._id.toString(),
-          patientId: app.patientId.toString(),
-          registrationNumber: app.registrationNumber,
-          doctorName: doctor ? doctor.name : null,
-          specialty: doctor ? doctor.specialty : null,
-          date: app.date.toISOString().split('T')[0],
-          startTime: app.startTime,
-          endTime: app.endTime,
-          status: app.status,
-          createdAt: app.createdAt,
-          updatedAt: app.updatedAt
-        };
-      })
-    );
-
-    res.json(formatted);
+    res.json(appointments); // ✅ Directly return raw appointment data
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error', error: error.message });

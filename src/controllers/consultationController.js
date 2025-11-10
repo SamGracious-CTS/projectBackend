@@ -46,8 +46,16 @@ exports.getAppointmentsByDoctor = async (req, res) => {
     const appointments = await Appointment.find({ registrationNumber, status: 'confirmed' })
       .populate('patientId', 'name age gender')
       .sort({ date: 1, startTime: 1 });
+
+       const filteredAppointments = appointments.map(app => ({
+        patientId: app.patientId._id,
+    name: app.patientId.name,
+    age: app.patientId.age,
+    gender: app.patientId.gender,
+    date: app.date
+  }));
  
-    return res.status(200).json(appointments);
+    return res.status(200).json(filteredAppointments);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error", error: error.message });
