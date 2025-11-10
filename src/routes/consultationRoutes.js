@@ -4,9 +4,9 @@ const consultation = require("../controllers/consultationController");
 const consultationSchema = require("../validators/consultationSchema");
 
 // GET routes using query params
-router.get("/", consultation.getAllAppointments);
-router.get("/appointment", consultation.getAppointmentsByDoctorAndAppointmentId); // ?registrationNumber=&appointmentId=
-router.get("/doctor", consultation.getAppointmentsByDoctor); // ?registrationNumber=
+//router.get("/", consultation.getAllAppointments);
+//router.get("/appointment", consultation.getAppointmentsByDoctorOnly); // ?registrationNumber=&appointmentId=
+router.get("/getConsultations", consultation.getAppointmentsByDoctor); // ?registrationNumber=
 
 // POST route using request body
 router.post("/createConsultation", consultationSchema, consultation.createConsultation);
@@ -14,4 +14,4 @@ router.post("/createConsultation", consultationSchema, consultation.createConsul
 // PUT route using request body
 router.put("/updateConsultation", consultation.updateConsultation);
 
-module.exports = router;
+module.exports = router;    
