@@ -76,40 +76,40 @@ exports.signup = async (req, res) => {
 //   }
 // };
 
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const credentials = await Credentials.findOne({ email }).populate("user");
+// exports.login = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     const credentials = await Credentials.findOne({ email }).populate("user");
 
-    if (!credentials) return res.status(400).json({ message: "Invalid email or password" });
+//     if (!credentials) return res.status(400).json({ message: "Invalid email or password" });
 
-    const match = await bcrypt.compare(password, credentials.password);
-    if (!match) return res.status(400).json({ message: "Invalid email or password" });
+//     const match = await bcrypt.compare(password, credentials.password);
+//     if (!match) return res.status(400).json({ message: "Invalid email or password" });
 
   
 
-    const jti = uuidv4();
-const token = jwt.sign(
-  { id: credentials.user._id, role: credentials.role, jti },
-  process.env.JWT_SECRET || "hospital_secret_key",
-  { expiresIn: "1d" }
-);
+//     const jti = uuidv4();
+// const token = jwt.sign(
+//   { id: credentials.user._id, role: credentials.role, jti },
+//   process.env.JWT_SECRET ,
+//   { expiresIn: "1d" }
+// );
 
 
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 1);
+//     const expiresAt = new Date();
+//     expiresAt.setDate(expiresAt.getDate() + 1);
 
-    res.json({
-      message: `${credentials.role} Login Successful`,
-      role: credentials.role,
-      data: credentials.user,
-      token,
-    });
-  } catch (e) {
-    console.error("Login error:", e);
-    res.status(500).json({ message: e.message });
-  }
-};
+//     res.json({
+//       message: `${credentials.role} Login Successful`,
+//       role: credentials.role,
+//       data: credentials.user,
+//       token,
+//     });
+//   } catch (e) {
+//     console.error("Login error:", e);
+//     res.status(500).json({ message: e.message });
+//   }
+// };
 
 // exports.logout = async (req, res) => {
 //   try {
@@ -132,6 +132,43 @@ const token = jwt.sign(
 //     return res.status(400).json({ message: "Invalid token" });
 //   }
 // };
+
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const credentials = await Credentials.findOne({ email }).populate("user");
+
+    if (!credentials) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    const match = await bcrypt.compare(password, credentials.password);
+    if (!match) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    // ✅ Use Credentials._id in the token
+    const jti = uuidv4();
+    const token = jwt.sign(
+      { id: credentials._id, role: credentials.role, jti },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 1);
+
+    res.json({
+      message: `${credentials.role} Login Successful`,
+      role: credentials.role,
+      data: credentials.user, // populated Patient/Doctor profile
+      token,
+    });
+  } catch (e) {
+    console.error("Login error:", e);
+    res.status(500).json({ message: e.message });
+  }
+};
 
 exports.logout = async (req, res) => {
   try {
