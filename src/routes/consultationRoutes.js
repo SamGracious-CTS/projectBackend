@@ -4,8 +4,7 @@ const consultation = require("../controllers/consultationController");
 const consultationSchema = require("../validators/consultationSchema");
 const { authorize } = require("../middleware/authorize");
  
-// GET routes using query params
-//router.get("/", consultation.getAllAppointments);
+
 router.get("/appointment", consultation.getAppointmentsByDoctorOnly); // ?registrationNumber=&appointmentId=
 router.get("/getAppointments", consultation.getAppointmentsByDoctor); // ?registrationNumber=
  
